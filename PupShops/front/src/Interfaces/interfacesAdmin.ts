@@ -1,3 +1,6 @@
+import { IUserRegister } from "./interfaces";
+import { IProduct } from "./ICart";
+
 export interface ICategory {
     id?: string;
     name: string;
@@ -6,6 +9,20 @@ export interface ICategory {
   export interface ISubCategory {
     id?: string;
     name: string;
+  }
+
+  export interface ICreateAdmin {
+    name: string;
+    lastname: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    country: string;
+    city: string;
+    address: string;
+    phone: number;
+    isAdmin?:boolean;
+    isActive?: boolean; // Esto indica que el usuario está activo por defecto
   }
   
   
@@ -25,3 +42,11 @@ export interface ICategory {
 export interface IUploadProductComponentProps {
   onPreview?: (product: IUploadProduct) => void;
 }
+
+export interface IOrder {
+  id: string;
+  date: string; 
+  status: string;
+  userId: string; 
+}
+

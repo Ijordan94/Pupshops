@@ -25,7 +25,7 @@ export class ProductsController {
   @Get()
   findAllProducts(
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('limit') limit: number = 75,
   ) {
     if (page && limit) return this.productsService.getAllProducts(page, limit);
     return this.productsService.getAllProducts(page, limit);
@@ -67,8 +67,14 @@ export class ProductsController {
     return this.productsService.getProductsByChildCategory(categoryId);
   }
 
+  
   @Get('parent/:categoryId')
   getProductsByParentCategory(@Param('categoryId') categoryId: string) {
     return this.productsService.getProductsByParentCategory(categoryId);
+  }
+
+  @Get('category/:categoryId')
+  getProductsRecursive(@Param('categoryId') categoryId: string) {
+    return this.productsService.getProductsRecursive(categoryId);
   }
 }

@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-=======
 export interface IUser {
-  id: number; // ID del usuario
+  id: number; 
   name: string;
   lastname: string;
   email: string;
@@ -11,29 +9,26 @@ export interface IUser {
   address: string;
   phone: number;
   isAdmin: boolean;
-  isActive: boolean; // Se puede agregar aquí si se quiere hacer opcional
+  isActive: boolean;
 }
 
 export interface IAdminRegisterUser extends IUserRegister {
   isAdmin: boolean;
-  isActive?: boolean; // Asumimos que esto es true por defecto
+  isActive?: boolean; 
+
+}
+
+export interface ILoginResponse {
+  success: boolean;
+  token: string;
+  findUser: IUser | null;
 }
 
 export interface IUserResponse {
-  login: boolean; // Asumiendo que esta propiedad también está en la interfaz
-  user: {
-    id: number; // Este campo debe estar presente
-    name: string;
-    lastname: string;
-    email: string;
-    country: string;
-    city: string;
-    address: string;
-    phone: number; // Asegúrate de que sea 'number'
-    isAdmin: boolean; // Asegúrate de que esto sea del tipo correcto
-    isActive: true; // Esto también debe ser true por defecto al crear el usuario
-  };
-  token: string; // Este también debe ser el tipo correcto
+  id?:string;
+  succes: boolean; 
+  user: IUser | null;
+  token: string; 
 }
 
 export interface IUserContextType {
@@ -41,11 +36,14 @@ export interface IUserContextType {
   setUser: React.Dispatch<React.SetStateAction<IUserResponse | null>>;
   isLogged: boolean;
   isAdmin: boolean;
-  setIsAdmin: (isLogged: boolean) => void;
+  setIsAdmin: (isAdmin: boolean) => void;
   setIsLogged: (isLogged: boolean) => void;
   signIn: (credentials: ILoginUser) => Promise<boolean>;
   signUp: (user: IUserRegister) => Promise<boolean>;
+  signUpRegister: (user: IUserRegister) => Promise<boolean>;
   logOut: () => void;
+  token: string | null;
+  setToken: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export interface ILoginUser {
@@ -63,13 +61,32 @@ export interface IUserRegister {
   city: string;
   address: string;
   phone: number;
-  isActive?: boolean; // Esto indica que el usuario está activo por defecto
+  isActive?: boolean; 
 }
 
->>>>>>> 77c5e74702047ca028192da01607975073a16252
 export interface IButtonProps {
-    text: string;
-    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    type?: "button" | "submit" | "reset";
-    disabled?:boolean;
+  text: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+}
+
+export interface IButtonPropsDelete {
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export interface ILoginClientProps {
+  setToken: (token: string | null) => void;
+ 
+}
+
+export interface IAppointment {
+  id: string; 
+  appointmentDate: string; 
+  appointmentTime: string; 
+  serviceName: string; 
+  isDeleted:boolean;
+  userId?: string;
+  status?: string; 
 }

@@ -10,6 +10,8 @@ export const cartContext = createContext<ICartContextType>({
   addToCart: async () => false,
   removeFromCart: () => {},
   total: 0,
+  originalTotal: 0,
+  discountTotal: 0,
   proceedToBuy: async () => {},
   purchasedItems: [],
 });
@@ -19,7 +21,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [total, setTotal] = useState(0);
   const [purchasedItems, setPurchasedItems] = useState<IProduct[]>([]);
   const [isClient, setIsClient] = useState(false);
-
+  const [originalTotal, setOriginalTotal] = useState(0);
+  const [discountTotal, setDiscountTotal] = useState(0);
   const { user } = useContext(UserContext);
 
   useEffect(() => {
@@ -82,28 +85,30 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const proceedToBuy = async () => {
     try {
-      const storedUserSession = localStorage.getItem("userSession");
-      if (!storedUserSession)
+      const storedAuthData = localStorage.getItem("authData");
+      if (!storedAuthData)
         throw new Error("No se encontró la sesión del usuario.");
 
-      const { token, user } = JSON.parse(storedUserSession);
-
+      const { token, user } = JSON.parse(storedAuthData);
       if (!token) throw new Error("Token no disponible");
 
-      const userId = user.id; // Ahora obtenemos el ID directamente del usuario
+      const userId = user.id;
       if (!userId) throw new Error("ID de usuario no disponible");
 
-      const response = await fetch(
-        `http://localhost:3001/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ userId, products: cartItems }),
-        }
-      );
+      const response = await fetch(`http://localhost:3001/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId,
+          products: cartItems.map((item) => ({
+            id: item.id,
+            quantity: item.quantity || 1,
+          })),
+        }),
+      });
 
       if (!response.ok) {
         const errorMessage = await response.text();
@@ -112,7 +117,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         );
       }
 
-      setPurchasedItems([...purchasedItems, ...cartItems]);
+      const result = await response.json();
+      const updatedPurchasedItems = cartItems.map((item) => ({
+        ...item,
+        orderId: result.orderId,
+      }));
+
+      setPurchasedItems([...purchasedItems, ...updatedPurchasedItems]);
       setCartItems([]);
       alert("Compra realizada con éxito!");
     } catch (error) {
@@ -121,12 +132,26 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  useEffect(() => {
-    const newTotal = cartItems.reduce(
-      (sum, item) => sum + item.price * (item.quantity || 1),
+  const calculateTotal = () => {
+    const sum = cartItems.reduce(
+      (acc, item) => acc + (item.price * (item.quantity || 1) || 0),
       0
     );
-    setTotal(newTotal);
+
+    setOriginalTotal(sum);
+
+    if (sum > 100) {
+      const discount = sum * 0.1;
+      setDiscountTotal(sum - discount);
+    } else {
+      setDiscountTotal(sum);
+    }
+
+    setTotal(sum);
+  };
+
+  useEffect(() => {
+    calculateTotal();
   }, [cartItems]);
 
   return (
@@ -135,9 +160,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         cartItems,
         addToCart,
         removeFromCart,
-        total,
+        total: discountTotal,
         proceedToBuy,
         purchasedItems,
+        originalTotal,
+        discountTotal,
       }}
     >
       {children}
